@@ -108,10 +108,10 @@
     width: 210px; height: 210px;
     background: radial-gradient(circle at 50% 95%, #e8c48c 0 35%, transparent 36%);
   }
-  .potence .p { stroke: #4a2a12; stroke-width: 5; fill: none; stroke-linecap: round;
-    opacity: 0; transition: opacity .35s; }
-  .potence .p.corps { stroke: var(--rouge); }
-  .potence .p.on { opacity: 1; }
+  .potence .p { opacity: 0; transition: opacity .35s, transform .35s; transform-box: fill-box; transform-origin: center; transform: scale(.6); }
+  .potence .p.on { opacity: 1; transform: scale(1); }
+  .potence .bois { stroke: #4a2a12; stroke-width: 5; fill: none; stroke-linecap: round; }
+  .potence .trait { stroke: #2b1a10; stroke-width: 1.5; stroke-linejoin: round; }
 
   .vies { min-width: 140px; }
   .vies .label { font-size: .8rem; text-transform: uppercase; letter-spacing: 2px; color: #7a4a20; }
@@ -208,16 +208,56 @@
 
     <div class="scene">
       <svg class="potence" viewBox="0 0 200 200">
-        <line class="p" x1="20" y1="188" x2="120" y2="188"/>
-        <line class="p" x1="50" y1="188" x2="50" y2="20"/>
-        <line class="p" x1="50" y1="20" x2="140" y2="20"/>
-        <line class="p" x1="140" y1="20" x2="140" y2="45"/>
-        <circle class="p corps" cx="140" cy="60" r="15"/>
-        <line class="p corps" x1="140" y1="75" x2="140" y2="125"/>
-        <line class="p corps" x1="140" y1="90" x2="118" y2="108"/>
-        <line class="p corps" x1="140" y1="90" x2="162" y2="108"/>
-        <line class="p corps" x1="140" y1="125" x2="122" y2="155"/>
-        <line class="p corps" x1="140" y1="125" x2="158" y2="155"/>
+        <defs>
+          <pattern id="rayures" width="56" height="8" patternUnits="userSpaceOnUse">
+            <rect width="56" height="8" fill="#a50f19"/>
+            <rect y="2" width="56" height="2" fill="#e2b13c"/>
+            <rect y="5" width="56" height="1.5" fill="#1f7a4a"/>
+          </pattern>
+        </defs>
+        <!-- 1-4 : potence -->
+        <line class="p bois" x1="20" y1="188" x2="120" y2="188"/>
+        <line class="p bois" x1="50" y1="188" x2="50" y2="20"/>
+        <line class="p bois" x1="50" y1="20" x2="140" y2="20"/>
+        <line class="p bois" x1="140" y1="20" x2="140" y2="38" style="stroke-width:3"/>
+        <!-- 5 : tête avec moustache -->
+        <g class="p">
+          <circle cx="140" cy="55" r="13" fill="#e9b98a" class="trait"/>
+          <circle cx="135" cy="53" r="1.6" fill="#2b1a10"/>
+          <circle cx="145" cy="53" r="1.6" fill="#2b1a10"/>
+          <path d="M132 60 Q136 57 140 60 Q144 57 148 60 Q144 63 140 61 Q136 63 132 60Z" fill="#2b1a10"/>
+        </g>
+        <!-- 6 : chapeau de torero (montera) -->
+        <g class="p">
+          <path d="M120 47 Q119 36 129 38 Q133 30 140 30 Q147 30 151 38 Q161 36 160 47 Q140 41 120 47Z" fill="#1a1a1a" class="trait"/>
+          <circle cx="120" cy="47" r="3.5" fill="#1a1a1a"/>
+          <circle cx="160" cy="47" r="3.5" fill="#1a1a1a"/>
+          <path d="M126 44 Q140 39 154 44" stroke="#e2b13c" stroke-width="1.5" fill="none"/>
+        </g>
+        <!-- 7 : poncho -->
+        <g class="p">
+          <path d="M131 68 L149 68 L172 116 L108 116 Z" fill="url(#rayures)" class="trait"/>
+          <path d="M108 116 v5 M114 116 v5 M120 116 v5 M126 116 v5 M132 116 v5 M138 116 v5 M144 116 v5 M150 116 v5 M156 116 v5 M162 116 v5 M168 116 v5 M172 116 v5"
+                stroke="#e2b13c" stroke-width="1.5"/>
+          <path d="M134 68 Q140 74 146 68" fill="#e9b98a" class="trait"/>
+        </g>
+        <!-- 8 : bras -->
+        <g class="p">
+          <path d="M120 96 L106 114" stroke="#e9b98a" stroke-width="5" stroke-linecap="round"/>
+          <path d="M160 96 L174 114" stroke="#e9b98a" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <!-- 9 : jambe + botte gauche -->
+        <g class="p">
+          <path d="M134 116 L131 144" stroke="#2c4a7a" stroke-width="7" stroke-linecap="round"/>
+          <path d="M125 141 H137 L137 160 H130 L129 163 H126 L125 160 H117 Q110 160 114 156 L125 154 Z" fill="#7a4a20" class="trait"/>
+          <path d="M126 146 H136" stroke="#e2b13c" stroke-width="1.5"/>
+        </g>
+        <!-- 10 : jambe + botte droite -->
+        <g class="p">
+          <path d="M146 116 L149 144" stroke="#2c4a7a" stroke-width="7" stroke-linecap="round"/>
+          <path d="M155 141 H143 L143 160 H150 L151 163 H154 L155 160 H163 Q170 160 166 156 L155 154 Z" fill="#7a4a20" class="trait"/>
+          <path d="M144 146 H154" stroke="#e2b13c" stroke-width="1.5"/>
+        </g>
       </svg>
       <div class="vies">
         <div class="label">Vies restantes</div>
