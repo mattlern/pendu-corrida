@@ -168,6 +168,27 @@
   }
   @keyframes tombe { to { transform: translateY(110vh) rotate(720deg); opacity: .8; } }
 
+
+  /* Taureau qui passe */
+  .toro {
+    position: fixed; bottom: 8px; left: 0; width: 140px; height: 94px;
+    pointer-events: none; z-index: 5;
+    transform: translateX(-200px);
+    filter: drop-shadow(0 4px 2px rgba(0,0,0,.35));
+  }
+  .toro .pata { transform-box: fill-box; transform-origin: top center; }
+  .toro.marche .pata.a { animation: pas .5s ease-in-out infinite alternate; }
+  .toro.marche .pata.b { animation: pas .5s ease-in-out infinite alternate-reverse; }
+  @keyframes pas { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+  .toro.marche .cuerpo { animation: rebote .25s ease-in-out infinite alternate; }
+  @keyframes rebote { to { transform: translateY(-1.5px); } }
+  .toro .cabeza { transform-box: view-box; transform-origin: 92px 40px; transition: transform .6s ease; }
+  .toro.mira .cabeza { transform: rotate(-24deg); }
+  .toro .cola { transform-box: view-box; transform-origin: 22px 34px; animation: cola 1.2s ease-in-out infinite alternate; }
+  @keyframes cola { to { transform: rotate(18deg); } }
+  .toro .bulle { opacity: 0; transition: opacity .3s; }
+  .toro.mira .bulle { opacity: 1; }
+
   @media (max-width: 480px) {
     .cartel { padding: 30px 14px 24px; }
     .mot span { width: 28px; height: 40px; font-size: 1.35rem; }
@@ -271,6 +292,31 @@
     <button class="action" id="action"></button>
   </main>
 
+
+  <svg class="toro" id="toro" viewBox="0 0 140 94" aria-hidden="true">
+    <g class="cuerpo">
+      <path class="cola" d="M24 36 Q10 44 12 64" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle class="cola" cx="12" cy="66" r="3.5" fill="#151515"/>
+      <rect class="pata a" x="28" y="54" width="8" height="28" rx="3" fill="#151515"/>
+      <rect class="pata b" x="40" y="54" width="8" height="28" rx="3" fill="#0a0a0a"/>
+      <rect class="pata b" x="74" y="54" width="8" height="28" rx="3" fill="#151515"/>
+      <rect class="pata a" x="84" y="54" width="8" height="28" rx="3" fill="#0a0a0a"/>
+      <path d="M22 40 Q22 26 40 26 Q60 18 82 24 Q96 28 96 44 Q96 60 80 62 L36 62 Q22 60 22 40Z" fill="#151515"/>
+      <g class="cabeza">
+        <path d="M88 30 Q100 24 112 32 L120 50 Q121 58 113 58 L104 56 Q92 50 88 40Z" fill="#151515"/>
+        <ellipse cx="115" cy="55" rx="6" ry="4" fill="#3a2a22"/>
+        <circle cx="107" cy="38" r="2.2" fill="#fff"/>
+        <circle cx="107.6" cy="37.6" r="1.1" fill="#000"/>
+        <path d="M98 30 Q96 18 106 12 Q101 20 104 29Z" fill="#f3ead8" stroke="#151515" stroke-width=".8"/>
+        <path d="M104 31 Q108 20 118 18 Q111 24 110 32Z" fill="#f3ead8" stroke="#151515" stroke-width=".8"/>
+        <g class="bulle">
+          <circle cx="126" cy="14" r="11" fill="#fff" stroke="#a50f19" stroke-width="1.5"/>
+          <text x="126" y="19" text-anchor="middle" font-size="14" font-family="Rye, serif" fill="#a50f19">¿?</text>
+        </g>
+      </g>
+    </g>
+  </svg>
+
 <script>
   const MOTS = ["BANDERILLAS", "TRADICIÓN", "TORERO"];
   const MAX = 10;
@@ -368,6 +414,34 @@
   });
 
   nouveauMot();
+
+  // Le taureau traverse, s'arrête pour regarder le pendu, puis repart
+  (function () {
+    const toro = $("toro");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let x, arret, phase, t0;
+    function depart() {
+      x = -160; phase = "va";
+      const carte = document.querySelector(".cartel").getBoundingClientRect();
+      arret = Math.max(10, carte.left - 150);
+      toro.classList.add("marche"); toro.classList.remove("mira");
+      requestAnimationFrame(boucle);
+    }
+    function boucle(t) {
+      if (phase === "va") {
+        x += 1.6;
+        if (x >= arret) { phase = "mira"; t0 = t; toro.classList.remove("marche"); toro.classList.add("mira"); }
+      } else if (phase === "mira") {
+        if (t - t0 > 2800) { phase = "sale"; toro.classList.remove("mira"); toro.classList.add("marche"); }
+      } else {
+        x += 2.2;
+        if (x > innerWidth + 20) { toro.classList.remove("marche"); setTimeout(depart, 7000); return; }
+      }
+      toro.style.transform = `translateX(${x}px)`;
+      requestAnimationFrame(boucle);
+    }
+    setTimeout(depart, 1500);
+  })();
 </script>
 </body>
 </html>
