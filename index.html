@@ -483,7 +483,7 @@
 
   // ---------- Public : bulles + sons (Web Audio + voix espagnole) ----------
   let sonOn = true, ctx;
-  $("son").onclick = () => { sonOn = !sonOn; $("son").textContent = sonOn ? "🔊" : "🔇"; if (!sonOn) speechSynthesis?.cancel(); };
+  $("son").onclick = () => { sonOn = !sonOn; $("son").textContent = sonOn ? "🔊" : "🔇"; if (!sonOn && oleEnCours) oleEnCours.pause(); };
   const audio = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; };
 
   function foule(duree, vol) {           // rumeur de la foule (bruit filtré)
@@ -505,14 +505,19 @@
     g.gain.setValueAtTime(.07, t + .45); g.gain.linearRampToValueAtTime(0, t + .55);
     o.connect(g).connect(a.destination); o.start(t); lfo.start(t); o.stop(t + .6); lfo.stop(t + .6);
   }
-  function dire(texte, pitch = .8, rate = .9) {
-    if (!("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(texte);
-    u.lang = "es-ES"; u.pitch = pitch; u.rate = rate; u.volume = 1;
-    const v = speechSynthesis.getVoices().find(v => v.lang.startsWith("es"));
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
+  // Olé enregistré (ole.mp3) — duree en secondes, 0 = en entier
+  const OLE = new Audio("ole.mp3"); OLE.preload = "auto";
+  let oleEnCours;
+  function ole(duree) {
+    if (oleEnCours) { clearInterval(oleEnCours.fade); oleEnCours.pause(); }
+    const s = OLE.cloneNode(); s.currentTime = .3; s.volume = 1; s.play().catch(() => {});
+    oleEnCours = s;
+    if (duree) setTimeout(() => {
+      s.fade = setInterval(() => {
+        s.volume = Math.max(0, s.volume - .1);
+        if (s.volume <= 0) { clearInterval(s.fade); s.pause(); }
+      }, 40);
+    }, duree * 1000);
   }
   function pitos(nb) {
     if (!sonOn) return;
@@ -527,12 +532,12 @@
     document.querySelector(".scene").appendChild(el);
     setTimeout(() => el.remove(), 1400);
     if (!sonOn) return;
-    if (bien) { dire("¡Olé!"); foule(1, .2); } else pitos(2);
+    if (bien) ole(2.3); else pitos(2);
   }
   function ovacion(finale) {
     if (!sonOn) return;
-    foule(finale ? 3.5 : 1.8, finale ? .35 : .28);
-    dire(finale ? "¡Olé, olé, olé! ¡Torero, torero!" : "¡Olééé!", .8, finale ? 1 : .8);
+    ole(finale ? 0 : 4.5);
+    if (finale) foule(4, .2);
   }
   function roses() {
     for (let n = 0; n < 130; n++) {
@@ -549,7 +554,6 @@
       setTimeout(() => r.remove(), 9000);
     }
   }
-  speechSynthesis?.getVoices();
 
   function confettis() {
     const emojis = ["🐄", "🐮", "🐂", "🇪🇸", "🇪🇸"];
