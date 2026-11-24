@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Le Pendu – Corrida</title>
+<title>El Ahorcado – Corrida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
@@ -163,8 +163,8 @@
 
   /* Pétales/confettis de victoire */
   .confetti {
-    position: fixed; top: -20px; width: 10px; height: 14px; pointer-events: none;
-    border-radius: 50% 50% 50% 0; animation: tombe linear forwards;
+    position: fixed; top: -50px; pointer-events: none; z-index: 10;
+    animation: tombe linear forwards;
   }
   @keyframes tombe { to { transform: translateY(110vh) rotate(720deg); opacity: .8; } }
 
@@ -199,9 +199,9 @@
     <svg class="coin br"><use href="#angle"/></svg>
 
     <p class="plaza">Plaza de Toros · Gran Corrida</p>
-    <h1>El Pendu<br>de la Corrida</h1>
+    <h1>El Ahorcado<br>de la Corrida</h1>
     <div class="ornement"><svg><use href="#cornes"/></svg></div>
-    <p class="sub">Trois mots de l'arène à deviner. ¡Suerte!</p>
+    <p class="sub">Adivina las tres palabras de la plaza. ¡Suerte!</p>
     <div class="fanions" id="fanions"></div>
 
     <div class="etapes" id="etapes"></div>
@@ -260,7 +260,7 @@
         </g>
       </svg>
       <div class="vies">
-        <div class="label">Vies restantes</div>
+        <div class="label">Vidas restantes</div>
         <div class="cornes" id="cornes"></div>
       </div>
     </div>
@@ -327,32 +327,33 @@
       msg.className = "msg win";
       confettis();
       if (i < MOTS.length - 1) {
-        msg.textContent = "¡Olé! Bien joué";
-        action.textContent = "Mot suivant →";
+        msg.textContent = "¡Olé! ¡Muy bien!";
+        action.textContent = "Siguiente palabra →";
         action.onclick = () => { i++; nouveauMot(); };
       } else {
-        msg.textContent = "¡Olé, olé! Les 3 mots trouvés 🏆";
-        action.textContent = "Rejouer";
+        msg.textContent = "¡Olé, olé! ¡Has encontrado las 3 palabras! 🏆";
+        action.textContent = "Jugar otra vez";
         action.onclick = () => { i = 0; nouveauMot(); };
       }
       action.className = "action show";
     } else if (erreurs >= MAX) {
       fini = true;
       msg.className = "msg lose";
-      msg.textContent = `Perdu ! C'était : ${mot}`;
-      action.textContent = "Réessayer";
+      msg.textContent = `¡Has perdido! Era: ${mot}`;
+      action.textContent = "Reintentar";
       action.onclick = nouveauMot;
       action.className = "action show";
     }
   }
 
   function confettis() {
-    const couleurs = ["#a50f19", "#e2b13c", "#f6d98a", "#ffffff"];
-    for (let n = 0; n < 60; n++) {
+    const emojis = ["🐄", "🐮", "🐂", "🇪🇸", "🇪🇸"];
+    for (let n = 0; n < 80; n++) {
       const c = document.createElement("div");
       c.className = "confetti";
       c.style.left = Math.random() * 100 + "vw";
-      c.style.background = couleurs[n % couleurs.length];
+      c.textContent = emojis[n % emojis.length];
+      c.style.fontSize = 22 + Math.random() * 22 + "px";
       c.style.animationDuration = 2 + Math.random() * 2 + "s";
       c.style.animationDelay = Math.random() * .6 + "s";
       document.body.appendChild(c);
