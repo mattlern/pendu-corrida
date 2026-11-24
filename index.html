@@ -206,8 +206,8 @@
   .jinete.galopa .pata.b { animation: galop .22s ease-in-out infinite alternate-reverse; }
   @keyframes galop { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
   .jinete.galopa .monta { animation: rebote .22s ease-in-out infinite alternate; }
-  .jinete .bandera { transform-box: view-box; transform-origin: 132px 10px; animation: ondea .35s ease-in-out infinite alternate; }
-  @keyframes ondea { from { transform: skewY(-7deg) scaleX(.95); } to { transform: skewY(5deg) scaleX(1.03); } }
+  .jinete .bandera { transform-box: view-box; transform-origin: 121px 62px; animation: ondea .3s ease-in-out infinite alternate; }
+  @keyframes ondea { from { transform: rotate(-8deg) skewX(4deg); } to { transform: rotate(10deg) skewX(-6deg); } }
 
   @media (max-width: 480px) {
     .cartel { padding: 30px 14px 24px; }
@@ -339,9 +339,6 @@
 
   <svg class="jinete" id="jinete" viewBox="0 0 200 158" aria-hidden="true">
     <g class="monta">
-      <!-- drapeau rouge -->
-      <line x1="112" y1="62" x2="132" y2="6" stroke="#5a3a1a" stroke-width="3" stroke-linecap="round"/>
-      <path class="bandera" d="M132 8 Q100 0 58 12 Q72 26 60 44 Q98 34 128 42 Z" fill="#c8101c" stroke="#7a0a10" stroke-width="1.2"/>
       <!-- queue -->
       <path d="M48 86 Q28 92 30 122 Q38 104 50 96Z" fill="#2a1608"/>
       <!-- pattes -->
@@ -363,8 +360,11 @@
       <path d="M90 100 H102 V106 H88 Q84 106 86 102Z" fill="#7a4a20"/>
       <path d="M84 50 Q92 44 102 50 L104 78 H84Z" fill="#a50f19" stroke="#e2b13c" stroke-width="1.5"/>
       <path d="M88 54 V76 M100 54 V76" stroke="#e2b13c" stroke-width="1.2"/>
-      <path d="M100 54 L112 62" stroke="#a50f19" stroke-width="5" stroke-linecap="round"/>
-      <circle cx="112" cy="62" r="3" fill="#e9b98a"/>
+      <!-- muleta rouge tenue en main -->
+      <path class="bandera" d="M118 62 Q132 60 146 66 Q154 90 146 116 Q130 124 112 116 Q106 104 110 92 Q116 78 118 62Z" fill="#c8101c" stroke="#7a0a10" stroke-width="1.2"/>
+      <path d="M124 66 Q128 90 124 114 M136 66 Q142 90 138 116" stroke="#8e0b14" stroke-width="1" fill="none"/>
+      <path d="M100 54 L120 62" stroke="#a50f19" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="121" cy="62" r="3.2" fill="#e9b98a"/>
       <circle cx="93" cy="40" r="8" fill="#e9b98a"/>
       <circle cx="96" cy="39" r="1.2" fill="#000"/>
       <path d="M82 34 Q82 26 88 28 Q93 22 98 28 Q104 26 104 34 Q93 30 82 34Z" fill="#1a1a1a"/>
