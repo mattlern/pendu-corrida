@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Pendu – Corrida</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #f3e3c3;
+    color: #2b1a10;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 16px;
+  }
+  h1 {
+    color: #b3121b; font-size: 2.4rem; letter-spacing: 3px;
+    text-transform: uppercase; text-align: center;
+  }
+  .sub { margin: 6px 0 18px; font-style: italic; color: #7a4a20; }
+  .bande { width: 100%; max-width: 640px; height: 10px; margin-bottom: 20px;
+    background: repeating-linear-gradient(90deg, #b3121b 0 40px, #e8b923 40px 80px); border-radius: 5px; }
+  .progress { font-weight: bold; margin-bottom: 10px; }
+  svg { width: 220px; height: 220px; }
+  svg .p { stroke: #2b1a10; stroke-width: 4; fill: none; stroke-linecap: round; display: none; }
+  svg .p.on { display: inline; }
+  .mot { font-size: 2.2rem; letter-spacing: 10px; margin: 18px 0; font-family: monospace; text-align: center; word-break: break-all; }
+  .vies { margin-bottom: 14px; }
+  .clavier { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 560px; }
+  .clavier button {
+    width: 40px; height: 44px; font-size: 1.1rem; font-weight: bold;
+    border: 2px solid #b3121b; background: #fff8ea; color: #b3121b;
+    border-radius: 6px; cursor: pointer;
+  }
+  .clavier button:hover:not(:disabled) { background: #b3121b; color: #fff; }
+  .clavier button:disabled { opacity: .35; cursor: default; }
+  .clavier button.ok:disabled { background: #e8b923; color: #2b1a10; opacity: 1; border-color: #e8b923; }
+  .msg { min-height: 30px; margin: 16px 0; font-size: 1.3rem; font-weight: bold; text-align: center; }
+  .msg.win { color: #1f7a2e; } .msg.lose { color: #b3121b; }
+  .action { padding: 10px 22px; font-size: 1rem; background: #b3121b; color: #fff;
+    border: none; border-radius: 8px; cursor: pointer; display: none; }
+  .action.show { display: inline-block; }
+</style>
+</head>
+<body>
+  <h1>🐂 Le Pendu de la Corrida</h1>
+  <p class="sub">Olé ! Devine les 3 mots de l'arène</p>
+  <div class="bande"></div>
+
+  <div class="progress" id="progress"></div>
+
+  <svg viewBox="0 0 200 200">
+    <line class="p" x1="20" y1="190" x2="120" y2="190"/>
+    <line class="p" x1="50" y1="190" x2="50" y2="20"/>
+    <line class="p" x1="50" y1="20" x2="140" y2="20"/>
+    <line class="p" x1="140" y1="20" x2="140" y2="45"/>
+    <circle class="p" cx="140" cy="60" r="15"/>
+    <line class="p" x1="140" y1="75" x2="140" y2="125"/>
+    <line class="p" x1="140" y1="90" x2="118" y2="108"/>
+    <line class="p" x1="140" y1="90" x2="162" y2="108"/>
+    <line class="p" x1="140" y1="125" x2="122" y2="155"/>
+    <line class="p" x1="140" y1="125" x2="158" y2="155"/>
+  </svg>
+
+  <div class="mot" id="mot"></div>
+  <div class="vies" id="vies"></div>
+  <div class="clavier" id="clavier"></div>
+  <div class="msg" id="msg"></div>
+  <button class="action" id="action"></button>
+
+<script>
+  const MOTS = ["BANDERILLAS", "TRADICIÓN", "TORERO"];
+  const MAX = 10;
+  const base = c => c.normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+  let i = 0, trouvees, erreurs, fini;
+
+  function nouveauMot() {
+    trouvees = new Set(); erreurs = 0; fini = false;
+    document.getElementById("msg").textContent = "";
+    document.getElementById("msg").className = "msg";
+    document.getElementById("action").className = "action";
+    document.getElementById("progress").textContent = `Mot ${i + 1} / ${MOTS.length}`;
+    const clavier = document.getElementById("clavier");
+    clavier.innerHTML = "";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
+      const b = document.createElement("button");
+      b.textContent = l; b.id = "k" + l;
+      b.onclick = () => jouer(l);
+      clavier.appendChild(b);
+    });
+    afficher();
+  }
+
+  function jouer(l) {
+    if (fini || trouvees.has(l)) return;
+    trouvees.add(l);
+    const btn = document.getElementById("k" + l);
+    btn.disabled = true;
+    const mot = MOTS[i];
+    if ([...mot].some(c => base(c) === l)) btn.classList.add("ok");
+    else erreurs++;
+    afficher();
+  }
+
+  function afficher() {
+    const mot = MOTS[i];
+    document.getElementById("mot").textContent =
+      [...mot].map(c => trouvees.has(base(c)) ? c : "_").join("");
+    document.getElementById("vies").textContent = `Erreurs : ${erreurs} / ${MAX}`;
+    document.querySelectorAll("svg .p").forEach((p, k) => p.classList.toggle("on", k < erreurs));
+
+    const gagne = [...mot].every(c => trouvees.has(base(c)));
+    const action = document.getElementById("action");
+    const msg = document.getElementById("msg");
+    if (gagne) {
+      fini = true;
+      msg.className = "msg win";
+      if (i < MOTS.length - 1) {
+        msg.textContent = "¡Olé! Bien joué 🎉";
+        action.textContent = "Mot suivant →";
+        action.onclick = () => { i++; nouveauMot(); };
+      } else {
+        msg.textContent = "¡Olé, olé! Tu as trouvé les 3 mots 🏆";
+        action.textContent = "Rejouer";
+        action.onclick = () => { i = 0; nouveauMot(); };
+      }
+      action.className = "action show";
+    } else if (erreurs >= MAX) {
+      fini = true;
+      msg.className = "msg lose";
+      msg.textContent = `Perdu ! Le mot était : ${mot}`;
+      action.textContent = "Réessayer ce mot";
+      action.onclick = nouveauMot;
+      action.className = "action show";
+    }
+  }
+
+  document.addEventListener("keydown", e => {
+    const l = base(e.key.toUpperCase());
+    if (/^[A-Z]$/.test(l)) jouer(l);
+    else if (e.key === "Enter" && fini) document.getElementById("action").click();
+  });
+
+  nouveauMot();
+</script>
+</body>
+</html>
