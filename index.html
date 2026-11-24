@@ -211,6 +211,34 @@
   .jinete .bandera { transform-box: view-box; transform-origin: 121px 62px; animation: ondea .3s ease-in-out infinite alternate; }
   @keyframes ondea { from { transform: rotate(-8deg) skewX(4deg); } to { transform: rotate(10deg) skewX(-6deg); } }
 
+  /* Réactions du public */
+  .scene { position: relative; }
+  .publico {
+    position: absolute; left: 50%; top: 10px; pointer-events: none;
+    font-family: "Rye", serif; font-size: 1.6rem; white-space: nowrap;
+    padding: 4px 14px; border-radius: 20px; border: 2px solid currentColor;
+    background: #fff; transform: translateX(-50%);
+    animation: aplauso 1.3s ease-out forwards;
+  }
+  .publico.bien { color: var(--rouge); }
+  .publico.mal { color: #555; }
+  @keyframes aplauso {
+    0% { opacity: 0; transform: translate(-50%, 20px) scale(.5) rotate(-6deg); }
+    20% { opacity: 1; transform: translate(-50%, 0) scale(1.15) rotate(3deg); }
+    70% { opacity: 1; transform: translate(-50%, -10px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -40px) scale(.9); }
+  }
+  .son {
+    position: fixed; top: 12px; right: 12px; z-index: 20;
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 3px solid var(--or); background: var(--rouge); color: #fff;
+    font-size: 1.3rem; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,.4);
+  }
+  .rosa { position: fixed; top: -60px; pointer-events: none; z-index: 10; animation: tombe-rosa linear forwards; }
+  @keyframes tombe-rosa {
+    to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); }
+  }
+
   @media (max-width: 480px) {
     .cartel { padding: 30px 14px 24px; }
     .mot span { width: 28px; height: 40px; font-size: 1.35rem; }
@@ -235,6 +263,7 @@
     </defs>
   </svg>
 
+  <button class="son" id="son" title="Son">🔊</button>
   <main class="cartel">
     <svg class="coin tl"><use href="#angle"/></svg>
     <svg class="coin tr"><use href="#angle"/></svg>
@@ -408,8 +437,8 @@
     trouvees.add(l);
     const btn = $("k" + l);
     btn.disabled = true;
-    if ([...MOTS[i]].some(c => base(c) === l)) btn.classList.add("ok");
-    else { erreurs++; btn.classList.add("ko"); }
+    if ([...MOTS[i]].some(c => base(c) === l)) { btn.classList.add("ok"); publico(true); }
+    else { erreurs++; btn.classList.add("ko"); publico(false); }
     afficher();
   }
 
@@ -429,13 +458,14 @@
     if (gagne) {
       fini = true;
       msg.className = "msg win";
-      confettis();
       if (i < MOTS.length - 1) {
+        confettis(); ovacion(false);
         msg.textContent = "¡Olé! ¡Muy bien!";
         action.textContent = "Siguiente palabra →";
         action.onclick = () => { i++; nouveauMot(); };
       } else {
         msg.textContent = "¡Olé, olé! ¡Has encontrado las 3 palabras! 🏆";
+        roses(); ovacion(true);
         action.textContent = "Jugar otra vez";
         action.onclick = () => { i = 0; nouveauMot(); };
       }
@@ -444,11 +474,82 @@
       fini = true;
       msg.className = "msg lose";
       msg.textContent = `¡Has perdido! Era: ${mot}`;
+      pitos(4);
       action.textContent = "Reintentar";
       action.onclick = nouveauMot;
       action.className = "action show";
     }
   }
+
+  // ---------- Public : bulles + sons (Web Audio + voix espagnole) ----------
+  let sonOn = true, ctx;
+  $("son").onclick = () => { sonOn = !sonOn; $("son").textContent = sonOn ? "🔊" : "🔇"; if (!sonOn) speechSynthesis?.cancel(); };
+  const audio = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; };
+
+  function foule(duree, vol) {           // rumeur de la foule (bruit filtré)
+    const a = audio(), n = a.sampleRate * duree, buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for (let k = 0; k < n; k++) d[k] = Math.random() * 2 - 1;
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    src.buffer = buf; f.type = "bandpass"; f.frequency.value = 700; f.Q.value = .6;
+    g.gain.setValueAtTime(0, a.currentTime);
+    g.gain.linearRampToValueAtTime(vol, a.currentTime + .15);
+    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + duree);
+    src.connect(f).connect(g).connect(a.destination); src.start();
+  }
+  function sifflet(retard, freq) {        // un sifflet strident
+    const a = audio(), t = a.currentTime + retard;
+    const o = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), g = a.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(freq, t); o.frequency.linearRampToValueAtTime(freq * 1.08, t + .5);
+    lfo.frequency.value = 28; lg.gain.value = 120; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.07, t + .03);
+    g.gain.setValueAtTime(.07, t + .45); g.gain.linearRampToValueAtTime(0, t + .55);
+    o.connect(g).connect(a.destination); o.start(t); lfo.start(t); o.stop(t + .6); lfo.stop(t + .6);
+  }
+  function dire(texte, pitch = .8, rate = .9) {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texte);
+    u.lang = "es-ES"; u.pitch = pitch; u.rate = rate; u.volume = 1;
+    const v = speechSynthesis.getVoices().find(v => v.lang.startsWith("es"));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
+  function pitos(nb) {
+    if (!sonOn) return;
+    for (let k = 0; k < nb; k++) sifflet(k * .18 + Math.random() * .1, 2500 + Math.random() * 900);
+    foule(.8, .12);
+  }
+  function publico(bien) {
+    const txt = bien ? ["¡Olé!", "¡Bravo!", "¡Eso es!", "¡Olé, olé!"] : ["¡Fuera!", "¡Uuuuh!", "¡Fiu fiuuu!", "¡Mal!"];
+    const el = document.createElement("div");
+    el.className = "publico " + (bien ? "bien" : "mal");
+    el.textContent = txt[Math.floor(Math.random() * txt.length)];
+    document.querySelector(".scene").appendChild(el);
+    setTimeout(() => el.remove(), 1400);
+    if (!sonOn) return;
+    if (bien) { dire("¡Olé!"); foule(1, .2); } else pitos(2);
+  }
+  function ovacion(finale) {
+    if (!sonOn) return;
+    foule(finale ? 3.5 : 1.8, finale ? .35 : .28);
+    dire(finale ? "¡Olé, olé, olé! ¡Torero, torero!" : "¡Olééé!", .8, finale ? 1 : .8);
+  }
+  function roses() {
+    for (let n = 0; n < 130; n++) {
+      const r = document.createElement("div");
+      r.className = "rosa";
+      r.textContent = n % 7 === 0 ? "💐" : "🌹";
+      r.style.left = Math.random() * 100 + "vw";
+      r.style.fontSize = 22 + Math.random() * 26 + "px";
+      r.style.setProperty("--dx", (Math.random() * 160 - 80) + "px");
+      r.style.setProperty("--rot", (Math.random() * 900 - 450) + "deg");
+      r.style.animationDuration = 3 + Math.random() * 3 + "s";
+      r.style.animationDelay = Math.random() * 2.5 + "s";
+      document.body.appendChild(r);
+      setTimeout(() => r.remove(), 9000);
+    }
+  }
+  speechSynthesis?.getVoices();
 
   function confettis() {
     const emojis = ["🐄", "🐮", "🐂", "🇪🇸", "🇪🇸"];
