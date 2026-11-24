@@ -192,7 +192,9 @@
   .toro.corre .pata.a { animation: pas .18s ease-in-out infinite alternate; }
   .toro.corre .pata.b { animation: pas .18s ease-in-out infinite alternate-reverse; }
   .toro.corre .cuerpo { animation: rebote .12s ease-in-out infinite alternate; }
-  .toro.corre .bulle { opacity: 1; }
+  .toro.corre .bulle, .toro.susto .bulle { opacity: 1; }
+  .toro.susto .cuerpo { animation: salto .3s ease-out; }
+  @keyframes salto { 40% { transform: translateY(-14px); } 100% { transform: translateY(0); } }
 
   /* Torero à cheval */
   .jinete {
@@ -476,7 +478,7 @@
     const toro = $("toro"), jinete = $("jinete"), bulle = $("bulleTxt");
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let x, xj, arret, phase, t0;
-    const etat = (el, ...cls) => { el.classList.remove("marche", "mira", "corre", "galopa"); el.classList.add(...cls); };
+    const etat = (el, ...cls) => { el.classList.remove("marche", "mira", "corre", "galopa", "susto"); el.classList.add(...cls); };
     function depart() {
       x = -160; xj = -260; phase = "va";
       const carte = document.querySelector(".cartel").getBoundingClientRect();
@@ -495,7 +497,17 @@
         if (t - t0 > 2800) { phase = "sale"; etat(toro, "marche"); }
       } else if (phase === "sale") {
         x += 2.2;
-        if (x >= milieu) { phase = "huye"; bulle.textContent = "¡!"; etat(toro, "corre"); etat(jinete, "galopa"); }
+        if (x >= milieu) { phase = "llega"; etat(jinete, "galopa"); }
+      } else if (phase === "llega") {
+        // le taureau continue tranquillement, il n'a rien vu
+        x += 2.2; xj += 6;
+        jinete.style.transform = `translateX(${xj}px)`;
+        if (xj + 175 >= x) { phase = "susto"; t0 = t; bulle.textContent = "¡!"; etat(toro, "susto"); }
+      } else if (phase === "susto") {
+        // il sursaute, se fige une demi-seconde...
+        xj += 1.5;
+        jinete.style.transform = `translateX(${xj}px)`;
+        if (t - t0 > 550) { phase = "huye"; etat(toro, "corre"); }
       } else {
         x += 7.5;
         xj += 7;
