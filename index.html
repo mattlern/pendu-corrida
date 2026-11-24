@@ -4,91 +4,257 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Le Pendu – Corrida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --rouge: #a50f19;
+    --rouge-fonce: #5e060c;
+    --or: #e2b13c;
+    --or-clair: #f6d98a;
+    --creme: #fbf1dc;
+    --encre: #2b1a10;
+    --sable: #d9a868;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: Georgia, "Times New Roman", serif;
-    background: #f3e3c3;
-    color: #2b1a10;
+    font-family: "Playfair Display", Georgia, serif;
+    color: var(--encre);
     min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 24px 16px;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 32px 14px 60px;
+    background:
+      radial-gradient(ellipse at 50% 110%, var(--sable) 0 30%, transparent 31%),
+      repeating-conic-gradient(from 0deg at 50% 0%, var(--rouge) 0deg 8deg, var(--rouge-fonce) 8deg 16deg);
+    background-attachment: fixed;
+  }
+
+  /* --- L'affiche (cartel) --- */
+  .cartel {
+    position: relative;
+    width: 100%; max-width: 680px;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,.6), transparent 60%),
+      var(--creme);
+    border: 6px solid var(--or);
+    outline: 3px solid var(--rouge);
+    outline-offset: -14px;
+    border-radius: 14px;
+    padding: 34px 28px 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.45), inset 0 0 60px rgba(165,15,25,.12);
+    text-align: center;
+    overflow: hidden;
+  }
+  .coin {
+    position: absolute; width: 46px; height: 46px; color: var(--rouge);
+  }
+  .coin.tl { top: 18px; left: 18px; }
+  .coin.tr { top: 18px; right: 18px; transform: scaleX(-1); }
+  .coin.bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
+  .coin.br { bottom: 18px; right: 18px; transform: scale(-1,-1); }
+
+  .plaza {
+    font-size: .85rem; letter-spacing: 6px; text-transform: uppercase;
+    color: var(--rouge); margin-bottom: 4px;
   }
   h1 {
-    color: #b3121b; font-size: 2.4rem; letter-spacing: 3px;
-    text-transform: uppercase; text-align: center;
+    font-family: "Rye", serif; font-weight: normal;
+    font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05;
+    color: var(--rouge);
+    text-shadow: 2px 2px 0 var(--or-clair), 4px 4px 0 rgba(0,0,0,.12);
   }
-  .sub { margin: 6px 0 18px; font-style: italic; color: #7a4a20; }
-  .bande { width: 100%; max-width: 640px; height: 10px; margin-bottom: 20px;
-    background: repeating-linear-gradient(90deg, #b3121b 0 40px, #e8b923 40px 80px); border-radius: 5px; }
-  .progress { font-weight: bold; margin-bottom: 10px; }
-  svg { width: 220px; height: 220px; }
-  svg .p { stroke: #2b1a10; stroke-width: 4; fill: none; stroke-linecap: round; display: none; }
-  svg .p.on { display: inline; }
-  .mot { font-size: 2.2rem; letter-spacing: 10px; margin: 18px 0; font-family: monospace; text-align: center; word-break: break-all; }
-  .vies { margin-bottom: 14px; }
-  .clavier { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 560px; }
+  .ornement {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin: 12px auto 6px; color: var(--or);
+  }
+  .ornement::before, .ornement::after {
+    content: ""; height: 2px; width: 90px;
+    background: linear-gradient(90deg, transparent, var(--or));
+  }
+  .ornement::after { transform: scaleX(-1); }
+  .ornement svg { width: 54px; height: 34px; }
+  .sub { font-style: italic; color: #7a4a20; margin-bottom: 18px; }
+
+  /* Fanions */
+  .fanions {
+    display: flex; justify-content: center; gap: 4px; margin: 0 auto 22px;
+  }
+  .fanions span {
+    width: 26px; height: 22px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    background: var(--rouge);
+  }
+  .fanions span:nth-child(even) { background: var(--or); }
+
+  /* Progression */
+  .etapes { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
+  .etapes div {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--rouge); color: var(--rouge);
+    display: grid; place-items: center; font-weight: 600;
+    background: #fff;
+  }
+  .etapes div.actif { background: var(--rouge); color: #fff; box-shadow: 0 0 0 4px var(--or-clair); }
+  .etapes div.fait { background: var(--or); border-color: var(--or); color: var(--encre); }
+
+  /* Scène */
+  .scene {
+    display: flex; align-items: center; justify-content: center; gap: 22px;
+    flex-wrap: wrap; margin: 6px 0 4px;
+  }
+  .potence {
+    width: 210px; height: 210px;
+    background: radial-gradient(circle at 50% 95%, #e8c48c 0 35%, transparent 36%);
+  }
+  .potence .p { stroke: #4a2a12; stroke-width: 5; fill: none; stroke-linecap: round;
+    opacity: 0; transition: opacity .35s; }
+  .potence .p.corps { stroke: var(--rouge); }
+  .potence .p.on { opacity: 1; }
+
+  .vies { min-width: 140px; }
+  .vies .label { font-size: .8rem; text-transform: uppercase; letter-spacing: 2px; color: #7a4a20; }
+  .cornes { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 150px; margin-top: 6px; }
+  .cornes svg { width: 24px; height: 18px; color: var(--rouge); transition: opacity .3s, transform .3s; }
+  .cornes svg.perdue { opacity: .18; transform: scale(.8); }
+
+  /* Mot */
+  .mot {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    margin: 20px 0 22px;
+  }
+  .mot span {
+    width: 38px; height: 50px;
+    display: grid; place-items: center;
+    font-family: "Rye", serif; font-size: 1.8rem; color: var(--rouge);
+    border-bottom: 4px solid var(--encre);
+  }
+  .mot span.vu { animation: pop .35s ease; }
+  @keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+  /* Clavier */
+  .clavier { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; max-width: 560px; margin: 0 auto; }
   .clavier button {
-    width: 40px; height: 44px; font-size: 1.1rem; font-weight: bold;
-    border: 2px solid #b3121b; background: #fff8ea; color: #b3121b;
-    border-radius: 6px; cursor: pointer;
+    width: 42px; height: 46px; font-family: "Playfair Display", serif;
+    font-size: 1.15rem; font-weight: 600;
+    border: 2px solid var(--rouge); background: #fff; color: var(--rouge);
+    border-radius: 8px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--rouge-fonce);
+    transition: transform .1s, background .15s;
   }
-  .clavier button:hover:not(:disabled) { background: #b3121b; color: #fff; }
-  .clavier button:disabled { opacity: .35; cursor: default; }
-  .clavier button.ok:disabled { background: #e8b923; color: #2b1a10; opacity: 1; border-color: #e8b923; }
-  .msg { min-height: 30px; margin: 16px 0; font-size: 1.3rem; font-weight: bold; text-align: center; }
-  .msg.win { color: #1f7a2e; } .msg.lose { color: #b3121b; }
-  .action { padding: 10px 22px; font-size: 1rem; background: #b3121b; color: #fff;
-    border: none; border-radius: 8px; cursor: pointer; display: none; }
-  .action.show { display: inline-block; }
+  .clavier button:hover:not(:disabled) { background: var(--rouge); color: #fff; transform: translateY(-2px); }
+  .clavier button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--rouge-fonce); }
+  .clavier button:disabled { cursor: default; box-shadow: none; }
+  .clavier button.ok:disabled { background: var(--or); border-color: var(--or); color: var(--encre); }
+  .clavier button.ko:disabled { background: #e9dcc4; border-color: #c9b89a; color: #a8957a; text-decoration: line-through; }
+
+  .msg { min-height: 36px; margin: 20px 0 10px; font-family: "Rye", serif; font-size: 1.5rem; }
+  .msg.win { color: var(--rouge); }
+  .msg.lose { color: var(--rouge-fonce); }
+  .action {
+    padding: 12px 28px; font-family: "Rye", serif; font-size: 1.05rem;
+    background: var(--rouge); color: #fff; border: 3px solid var(--or);
+    border-radius: 40px; cursor: pointer; display: none;
+    box-shadow: 0 4px 0 var(--rouge-fonce);
+  }
+  .action:hover { background: var(--rouge-fonce); }
+  .action.show { display: inline-block; animation: pop .4s ease; }
+
+  /* Pétales/confettis de victoire */
+  .confetti {
+    position: fixed; top: -20px; width: 10px; height: 14px; pointer-events: none;
+    border-radius: 50% 50% 50% 0; animation: tombe linear forwards;
+  }
+  @keyframes tombe { to { transform: translateY(110vh) rotate(720deg); opacity: .8; } }
+
+  @media (max-width: 480px) {
+    .cartel { padding: 30px 14px 24px; }
+    .mot span { width: 28px; height: 40px; font-size: 1.35rem; }
+    .clavier button { width: 36px; height: 42px; }
+    .coin { width: 32px; height: 32px; }
+  }
 </style>
 </head>
 <body>
-  <h1>🐂 Le Pendu de la Corrida</h1>
-  <p class="sub">Olé ! Devine les 3 mots de l'arène</p>
-  <div class="bande"></div>
-
-  <div class="progress" id="progress"></div>
-
-  <svg viewBox="0 0 200 200">
-    <line class="p" x1="20" y1="190" x2="120" y2="190"/>
-    <line class="p" x1="50" y1="190" x2="50" y2="20"/>
-    <line class="p" x1="50" y1="20" x2="140" y2="20"/>
-    <line class="p" x1="140" y1="20" x2="140" y2="45"/>
-    <circle class="p" cx="140" cy="60" r="15"/>
-    <line class="p" x1="140" y1="75" x2="140" y2="125"/>
-    <line class="p" x1="140" y1="90" x2="118" y2="108"/>
-    <line class="p" x1="140" y1="90" x2="162" y2="108"/>
-    <line class="p" x1="140" y1="125" x2="122" y2="155"/>
-    <line class="p" x1="140" y1="125" x2="158" y2="155"/>
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- tête de taureau stylisée -->
+      <symbol id="cornes" viewBox="0 0 40 30">
+        <path fill="currentColor" d="M2 4c3 8 8 11 13 11h10c5 0 10-3 13-11-2 9-6 14-11 15l-2 8h-10l-2-8C8 18 4 13 2 4z"/>
+      </symbol>
+      <!-- motif d'angle -->
+      <symbol id="angle" viewBox="0 0 50 50">
+        <path fill="none" stroke="currentColor" stroke-width="3" d="M3 47V3h44"/>
+        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 47V12h35"/>
+        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+      </symbol>
+    </defs>
   </svg>
 
-  <div class="mot" id="mot"></div>
-  <div class="vies" id="vies"></div>
-  <div class="clavier" id="clavier"></div>
-  <div class="msg" id="msg"></div>
-  <button class="action" id="action"></button>
+  <main class="cartel">
+    <svg class="coin tl"><use href="#angle"/></svg>
+    <svg class="coin tr"><use href="#angle"/></svg>
+    <svg class="coin bl"><use href="#angle"/></svg>
+    <svg class="coin br"><use href="#angle"/></svg>
+
+    <p class="plaza">Plaza de Toros · Gran Corrida</p>
+    <h1>El Pendu<br>de la Corrida</h1>
+    <div class="ornement"><svg><use href="#cornes"/></svg></div>
+    <p class="sub">Trois mots de l'arène à deviner. ¡Suerte!</p>
+    <div class="fanions" id="fanions"></div>
+
+    <div class="etapes" id="etapes"></div>
+
+    <div class="scene">
+      <svg class="potence" viewBox="0 0 200 200">
+        <line class="p" x1="20" y1="188" x2="120" y2="188"/>
+        <line class="p" x1="50" y1="188" x2="50" y2="20"/>
+        <line class="p" x1="50" y1="20" x2="140" y2="20"/>
+        <line class="p" x1="140" y1="20" x2="140" y2="45"/>
+        <circle class="p corps" cx="140" cy="60" r="15"/>
+        <line class="p corps" x1="140" y1="75" x2="140" y2="125"/>
+        <line class="p corps" x1="140" y1="90" x2="118" y2="108"/>
+        <line class="p corps" x1="140" y1="90" x2="162" y2="108"/>
+        <line class="p corps" x1="140" y1="125" x2="122" y2="155"/>
+        <line class="p corps" x1="140" y1="125" x2="158" y2="155"/>
+      </svg>
+      <div class="vies">
+        <div class="label">Vies restantes</div>
+        <div class="cornes" id="cornes"></div>
+      </div>
+    </div>
+
+    <div class="mot" id="mot"></div>
+    <div class="clavier" id="clavier"></div>
+    <div class="msg" id="msg"></div>
+    <button class="action" id="action"></button>
+  </main>
 
 <script>
   const MOTS = ["BANDERILLAS", "TRADICIÓN", "TORERO"];
   const MAX = 10;
   const base = c => c.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const $ = id => document.getElementById(id);
 
-  let i = 0, trouvees, erreurs, fini;
+  $("fanions").innerHTML = "<span></span>".repeat(14);
+
+  let i = 0, trouvees, erreurs, fini, dejaVu;
 
   function nouveauMot() {
-    trouvees = new Set(); erreurs = 0; fini = false;
-    document.getElementById("msg").textContent = "";
-    document.getElementById("msg").className = "msg";
-    document.getElementById("action").className = "action";
-    document.getElementById("progress").textContent = `Mot ${i + 1} / ${MOTS.length}`;
-    const clavier = document.getElementById("clavier");
-    clavier.innerHTML = "";
+    trouvees = new Set(); dejaVu = new Set(); erreurs = 0; fini = false;
+    $("msg").textContent = ""; $("msg").className = "msg";
+    $("action").className = "action";
+    $("etapes").innerHTML = MOTS.map((_, k) =>
+      `<div class="${k < i ? "fait" : k === i ? "actif" : ""}">${k + 1}</div>`).join("");
+    $("cornes").innerHTML = Array.from({ length: MAX },
+      () => '<svg><use href="#cornes"/></svg>').join("");
+    $("clavier").innerHTML = "";
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
       const b = document.createElement("button");
       b.textContent = l; b.id = "k" + l;
       b.onclick = () => jouer(l);
-      clavier.appendChild(b);
+      $("clavier").appendChild(b);
     });
     afficher();
   }
@@ -96,33 +262,36 @@
   function jouer(l) {
     if (fini || trouvees.has(l)) return;
     trouvees.add(l);
-    const btn = document.getElementById("k" + l);
+    const btn = $("k" + l);
     btn.disabled = true;
-    const mot = MOTS[i];
-    if ([...mot].some(c => base(c) === l)) btn.classList.add("ok");
-    else erreurs++;
+    if ([...MOTS[i]].some(c => base(c) === l)) btn.classList.add("ok");
+    else { erreurs++; btn.classList.add("ko"); }
     afficher();
   }
 
   function afficher() {
     const mot = MOTS[i];
-    document.getElementById("mot").textContent =
-      [...mot].map(c => trouvees.has(base(c)) ? c : "_").join("");
-    document.getElementById("vies").textContent = `Erreurs : ${erreurs} / ${MAX}`;
-    document.querySelectorAll("svg .p").forEach((p, k) => p.classList.toggle("on", k < erreurs));
+    $("mot").innerHTML = [...mot].map((c, k) => {
+      const visible = trouvees.has(base(c));
+      const nouveau = visible && !dejaVu.has(k);
+      if (visible) dejaVu.add(k);
+      return `<span class="${nouveau ? "vu" : ""}">${visible ? c : ""}</span>`;
+    }).join("");
+    document.querySelectorAll(".potence .p").forEach((p, k) => p.classList.toggle("on", k < erreurs));
+    document.querySelectorAll("#cornes svg").forEach((s, k) => s.classList.toggle("perdue", k >= MAX - erreurs));
 
     const gagne = [...mot].every(c => trouvees.has(base(c)));
-    const action = document.getElementById("action");
-    const msg = document.getElementById("msg");
+    const action = $("action"), msg = $("msg");
     if (gagne) {
       fini = true;
       msg.className = "msg win";
+      confettis();
       if (i < MOTS.length - 1) {
-        msg.textContent = "¡Olé! Bien joué 🎉";
+        msg.textContent = "¡Olé! Bien joué";
         action.textContent = "Mot suivant →";
         action.onclick = () => { i++; nouveauMot(); };
       } else {
-        msg.textContent = "¡Olé, olé! Tu as trouvé les 3 mots 🏆";
+        msg.textContent = "¡Olé, olé! Les 3 mots trouvés 🏆";
         action.textContent = "Rejouer";
         action.onclick = () => { i = 0; nouveauMot(); };
       }
@@ -130,17 +299,31 @@
     } else if (erreurs >= MAX) {
       fini = true;
       msg.className = "msg lose";
-      msg.textContent = `Perdu ! Le mot était : ${mot}`;
-      action.textContent = "Réessayer ce mot";
+      msg.textContent = `Perdu ! C'était : ${mot}`;
+      action.textContent = "Réessayer";
       action.onclick = nouveauMot;
       action.className = "action show";
+    }
+  }
+
+  function confettis() {
+    const couleurs = ["#a50f19", "#e2b13c", "#f6d98a", "#ffffff"];
+    for (let n = 0; n < 60; n++) {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.background = couleurs[n % couleurs.length];
+      c.style.animationDuration = 2 + Math.random() * 2 + "s";
+      c.style.animationDelay = Math.random() * .6 + "s";
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
     }
   }
 
   document.addEventListener("keydown", e => {
     const l = base(e.key.toUpperCase());
     if (/^[A-Z]$/.test(l)) jouer(l);
-    else if (e.key === "Enter" && fini) document.getElementById("action").click();
+    else if (e.key === "Enter" && fini) $("action").click();
   });
 
   nouveauMot();
